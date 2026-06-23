@@ -70,7 +70,7 @@ export function useSSE(repoId, { onComplete } = {}) {
             setCitations(localCitations)
           } else if (parsed.event === 'done') {
             onCompleteRef.current?.(localAnswer, localCitations)
-            setLoading(false)
+            reset() // clears answer/citations so the streaming bubble disappears
           } else if (parsed.event === 'error') {
             setError(parsed.data?.error ?? 'Unknown error')
             setLoading(false)
