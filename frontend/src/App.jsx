@@ -1,11 +1,35 @@
+import { useState } from 'react'
 import './index.css'
+import { RepoConnector } from './components/RepoConnector'
+import { ChatPage } from './pages/ChatPage'
 
-function App() {
+export default function App() {
+  const [repoId, setRepoId] = useState(null)
+  const [repoUrl, setRepoUrl] = useState('')
+
+  function handleConnected(id, url) {
+    setRepoId(id)
+    setRepoUrl(url)
+  }
+
+  function handleDisconnect() {
+    setRepoId(null)
+    setRepoUrl('')
+  }
+
+  if (!repoId) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-gray-100">
+        <RepoConnector onConnected={handleConnected} />
+      </div>
+    )
+  }
+
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
-      <p className="text-gray-400">RepoMind — pages coming soon</p>
-    </div>
+    <ChatPage
+      repoId={repoId}
+      repoUrl={repoUrl}
+      onDisconnect={handleDisconnect}
+    />
   )
 }
-
-export default App
