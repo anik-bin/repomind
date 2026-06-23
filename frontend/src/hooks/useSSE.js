@@ -5,17 +5,20 @@ import { openChatStream } from '../api'
  * Custom hook for consuming the /api/chat/stream/ SSE endpoint.
  *
  * Usage:
- *   const { ask, answer, citations, loading, error, reset } = useSSE(repoId)
+ *   const { ask, answer, citations, loading, error } = useSSE(repoId, { onComplete })
  *
- * Calls ask(question) to start a stream. Tokens are appended to `answer`
- * as they arrive. `citations` is populated on the final `citations` event.
+ * onComplete(finalAnswer, finalCitations) is called exactly once when the
+ * stream finishes successfully, with the locally-accumulated answer — not
+ * from React state, so there are no concurrent-render timing issues.
  */
-export function useSSE(repoId) {
+export function useSSE(repoId, { onComplete } = {}) {
   const [answer, setAnswer] = useState('')
   const [citations, setCitations] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const readerRef = useRef(null)
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
 
   const reset = useCallback(() => {
     setAnswer('')
@@ -40,6 +43,10 @@ export function useSSE(repoId) {
 
     const decoder = new TextDecoder()
     let buffer = ''
+    // Track answer locally so onComplete always gets the correct final value,
+    // regardless of React render timing.
+    let localAnswer = ''
+    let localCitations = []
 
     try {
       while (true) {
@@ -48,7 +55,6 @@ export function useSSE(repoId) {
 
         buffer += decoder.decode(value, { stream: true })
         const events = buffer.split('\n\n')
-        // The last element may be an incomplete event — keep it in the buffer
         buffer = events.pop()
 
         for (const raw of events) {
@@ -56,10 +62,14 @@ export function useSSE(repoId) {
           if (!parsed) continue
 
           if (parsed.event === 'token') {
-            setAnswer(prev => prev + (parsed.data?.text ?? ''))
+            const text = parsed.data?.text ?? ''
+            localAnswer += text
+            setAnswer(prev => prev + text)
           } else if (parsed.event === 'citations') {
-            setCitations(parsed.data?.citations ?? [])
+            localCitations = parsed.data?.citations ?? []
+            setCitations(localCitations)
           } else if (parsed.event === 'done') {
+            onCompleteRef.current?.(localAnswer, localCitations)
             setLoading(false)
           } else if (parsed.event === 'error') {
             setError(parsed.data?.error ?? 'Unknown error')
@@ -68,7 +78,6 @@ export function useSSE(repoId) {
         }
       }
     } catch (err) {
-      // AbortError is expected when the component unmounts mid-stream
       if (err.name !== 'AbortError') setError(err.message)
     } finally {
       setLoading(false)
@@ -78,10 +87,6 @@ export function useSSE(repoId) {
   return { ask, answer, citations, loading, error, reset }
 }
 
-/**
- * Parse a single SSE event block (the text between double newlines).
- * Returns { event, data } or null if malformed.
- */
 function _parseSSEEvent(raw) {
   const lines = raw.trim().split('\n')
   let event = 'message'

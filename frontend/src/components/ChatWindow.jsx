@@ -22,7 +22,7 @@ export function ChatWindow({ messages, streamingAnswer, loading, error, onSubmit
     <div className="flex flex-col h-full">
       {/* Message list */}
       <div className="flex-1 overflow-y-auto px-4 py-6 space-y-6">
-        {messages.length === 0 && !loading && (
+        {messages.length === 0 && !loading && !streamingAnswer && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-2">
             <p className="text-gray-400 text-sm">Ask anything about this codebase.</p>
             <p className="text-gray-600 text-xs">Answers are grounded in the actual source code.</p>
@@ -38,13 +38,13 @@ export function ChatWindow({ messages, streamingAnswer, loading, error, onSubmit
           />
         ))}
 
-        {/* Live streaming bubble */}
-        {loading && streamingAnswer && (
+        {/* Live streaming bubble — stays visible until answer is cleared by reset() */}
+        {streamingAnswer && (
           <MessageBubble
             role="assistant"
             content={streamingAnswer}
             citations={[]}
-            streaming
+            streaming={loading}
           />
         )}
 
