@@ -18,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 _EMBEDDING_MODEL = 'text-embedding-3-small'
 _BATCH_SIZE = 100
+# text-embedding-3-small supports 8192 tokens; ~4 chars/token → cap at 24000 chars
+_MAX_CONTENT_CHARS = 24000
 
 
 class _OpenAIEmbedder(EmbeddingFunction):
@@ -60,7 +62,7 @@ def embed_chunks(chunks: list[Chunk], repo_id: str) -> int:
         batch = chunks[batch_start:batch_start + _BATCH_SIZE]
         collection.upsert(
             ids=[_chunk_id(c, batch_start + i) for i, c in enumerate(batch)],
-            documents=[c.content for c in batch],
+            documents=[c.content[:_MAX_CONTENT_CHARS] for c in batch],
             metadatas=[
                 {
                     'file_path': c.file_path,

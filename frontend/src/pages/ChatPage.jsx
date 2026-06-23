@@ -6,15 +6,25 @@ export function ChatPage({ repoId, repoUrl, onDisconnect }) {
   const [messages, setMessages] = useState([])
   const { ask, answer, citations, loading, error, reset } = useSSE(repoId)
 
-  // When streaming finishes, commit the answer to the message list
+  // When streaming finishes, commit the answer to the message list.
+  // Use refs for answer/citations so we read the latest value without
+  // re-firing the effect on every token.
+  const answerRef = useRef(answer)
+  const citationsRef = useRef(citations)
+  answerRef.current = answer
+  citationsRef.current = citations
+
   const wasLoadingRef = useRef(false)
   useEffect(() => {
-    if (wasLoadingRef.current && !loading && answer) {
-      setMessages(prev => [...prev, { role: 'assistant', content: answer, citations }])
+    if (wasLoadingRef.current && !loading && answerRef.current) {
+      setMessages(prev => [
+        ...prev,
+        { role: 'assistant', content: answerRef.current, citations: citationsRef.current },
+      ])
       reset()
     }
     wasLoadingRef.current = loading
-  }, [loading, answer, citations, reset])
+  }, [loading, reset])
 
   function handleSubmit(question) {
     setMessages(prev => [...prev, { role: 'user', content: question, citations: [] }])
