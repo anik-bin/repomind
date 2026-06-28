@@ -2,26 +2,66 @@ import { getGitHubAuthUrl } from '../api'
 
 export function LoginPage() {
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-8 w-full max-w-sm text-center space-y-6">
-        <div>
-          <h1 className="text-white text-2xl font-bold tracking-tight">CodeRepo</h1>
-          <p className="text-gray-400 text-sm mt-2">Ask questions about any GitHub codebase</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        background: 'radial-gradient(ellipse at 60% 20%, rgba(234,179,8,0.12) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(234,179,8,0.07) 0%, transparent 50%), #000000',
+      }}
+    >
+      {/* Subtle yellow glow ring behind the card */}
+      <div className="relative w-full max-w-sm">
+        <div
+          className="absolute -inset-px rounded-2xl"
+          style={{
+            background: 'linear-gradient(135deg, rgba(234,179,8,0.35) 0%, transparent 50%, rgba(234,179,8,0.1) 100%)',
+          }}
+        />
 
-        <a
-          href={getGitHubAuthUrl()}
-          className="flex items-center justify-center gap-3 w-full bg-gray-800
-                     hover:bg-gray-700 active:bg-gray-600 text-white rounded-xl
-                     px-4 py-3 text-sm font-medium transition-colors border border-gray-700"
+        <div
+          className="relative rounded-2xl p-8 text-center space-y-6"
+          style={{ background: 'rgba(10,10,10,0.95)', border: '1px solid rgba(234,179,8,0.15)' }}
         >
-          <GitHubIcon className="w-5 h-5 shrink-0" />
-          Login with GitHub
-        </a>
+          {/* Logo area */}
+          <div className="space-y-3">
+            <span
+              className="block text-3xl font-bold tracking-tight"
+              style={{ color: '#EAB308' }}
+            >
+              CodeRepo
+            </span>
+            <p
+              className="text-lg font-semibold tracking-wide"
+              style={{
+                background: 'linear-gradient(90deg, #ffffff 0%, #EAB308 60%, #ffffff 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              Explore Repositories Through Conversation
+            </p>
+            <p className="text-gray-500 text-sm">Ask questions about any GitHub codebase</p>
+          </div>
 
-        <p className="text-gray-600 text-xs">
-          We only request <code className="text-gray-500">read:user</code> scope — no write access.
-        </p>
+          {/* Divider */}
+          <div
+            className="h-px w-full"
+            style={{ background: 'linear-gradient(to right, transparent, rgba(234,179,8,0.3), transparent)' }}
+          />
+
+          {/* Login button — yellow with black text */}
+          <a
+            href={getGitHubAuthUrl()}
+            className="flex items-center justify-center gap-3 w-full rounded-xl px-4 py-3 text-sm font-semibold transition-all duration-150 hover:brightness-110 active:scale-95"
+            style={{ background: '#EAB308', color: '#000000' }}
+          >
+            <GitHubIcon className="w-5 h-5 shrink-0" />
+            Login with GitHub
+          </a>
+
+          <p className="text-gray-600 text-xs">
+            We only request <code className="text-yellow-600/70">read:user</code> scope — no write access.
+          </p>
+        </div>
       </div>
     </div>
   )
